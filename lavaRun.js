@@ -9,7 +9,7 @@ function preload() {
     game.load.image('starSmall', 'assets/star.png');
     game.load.image('starBig', 'assets/star2.png');
     game.load.image('background', 'assets/background2.png');
-    game.load.spritesheet('banana', 'assets/banana.png', 32, 62);
+    game.load.spritesheet('banana', 'assets/banana.png', 33, 56);
 
 }
 
