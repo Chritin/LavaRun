@@ -9,6 +9,10 @@ function preload() {
     game.load.spritesheet('banana', 'assets/banana.png', 33, 56);
     game.load.spritesheet('lava', 'assets/lava.png', 140, 119);
     game.load.spritesheet('enemy', 'assets/droid.png', 32,32);
+    game.load.audio('boop','assets/boop.wav');
+    game.load.audio('song', 'assets/song2.mp3');
+    game.load.spritesheet('player', 'assets/complete_sprite.png', 70, 70);
+
 //    game.load.image('banana', 'assets/star.png');
 
 }
@@ -26,9 +30,16 @@ var bananas;
 var lava;
 var enemies; 
 
-var score = 0;
+var score = 100;
 var scoreText; 
+var lavaDelayTracker = 0;
+var scoreDelayTracker = 0;
+var position = -100;
+var bananaCount = 0;
 
+var monkey;
+
+var resultText;
 function create() {
 
     game.physics.startSystem(Phaser.Physics.ARCADE);
@@ -64,6 +75,16 @@ function create() {
     player.animations.add('turn', [4], 20, true);
     player.animations.add('right', [5, 6, 7, 8], 10, true);
     
+    monkey = game.add.sprite(64, 64, 'player');
+    game.physics.enable(monkey, Phaser.Physics.ARCADE);
+    
+    monkey.body.bounce.y = 0.2;
+    monkey.body.collideWorldBounds = true;
+    monkey.body.setSize(20, 32, 5, 16);
+    
+    monkey.animations.add('left', [2,3,4,5,6,7,8,9], 3, false);
+//    monkey.animations.add('right', [10, 11, 12, 13, 14, 15, 16, 17], 8, true);
+    
     bananas = game.add.group();
     bananas.enableBody = true;
     for(var i = 1; i < 30; i++){
@@ -98,10 +119,12 @@ function create() {
 
 //    lava.body.allowGravity = false;
     for(var x = 0; x < game.world.width; x+= 128){
-        lava = game.add.sprite(x,0, 'lava');
+        lava = game.add.sprite(x, 0, 'lava'); //change y position of 
         lava.animations.add('fall', [0,1,2,3], 4, true);
         lava.animations.play('fall');
     }
+    
+
 
 
     game.camera.follow(player);
@@ -110,18 +133,21 @@ function create() {
     cursors = game.input.keyboard.createCursorKeys();
     jumpButton = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
     
-    scoreText = game.add.text(16, 64, 'Score: 0', {fontsize: '32px', fill: '#FFF'});
+    scoreText = game.add.text(16, 64, 'Score: 100', {fontsize: '32px', fill: '#FFF'});
+        game.sound.play('song');
+
 
 }
 
 function update() {
-
+    
     game.physics.arcade.collide(player, layer);
     game.physics.arcade.collide(bananas, layer);
     game.physics.arcade.collide(enemies, layer);
+    game.physics.arcade.collide(monkey, layer);
     
     game.physics.arcade.overlap(player, bananas, collectBanana, null, this);
-    game.physics.arcade.overlap(player, enemies, attackPlayer, null, this);
+    game.physics.arcade.overlap(player, enemies,  collideEnemy, null, this);
     
     scoreText.x = game.camera.x;
     scoreText.y = game.camera.y;
@@ -131,12 +157,16 @@ function update() {
     if (cursors.left.isDown)
     {
         player.body.velocity.x = -150;
+        monkey.body.velocity.x = -150;
 
         if (facing != 'left')
         {
+            monkey.animations.play('left');
+
             player.animations.play('left');
             facing = 'left';
         }
+        
     }
     else if (cursors.right.isDown)
     {
@@ -144,6 +174,7 @@ function update() {
 
         if (facing != 'right')
         {
+            monkey.animations.play('right');
             player.animations.play('right');
             facing = 'right';
         }
@@ -156,11 +187,11 @@ function update() {
 
             if (facing == 'left')
             {
-                player.frame = 0;
+                player.frame = 1;
             }
             else
             {
-                player.frame = 5;
+                player.frame = 0;
             }
 
             facing = 'idle';
@@ -170,6 +201,7 @@ function update() {
     if (jumpButton.isDown && player.body.onFloor() && game.time.now > jumpTimer)
     {
         player.body.velocity.y = -250;
+        monkey.body.velocity.y = -250;
         jumpTimer = game.time.now + 750;
     }
 
@@ -177,16 +209,37 @@ function update() {
 
 function collectBanana(player, banana){
     banana.kill();
+    bananaCount = bananaCount + 1;
     
-    score += 10;
+    console.log('bananaCount: ' + bananaCount);
+    
+    if(score > 400){
+        resultText = game.add.text(game.camera.width/2, game.camera.height/2, 'Congratulations, You Win!', {fontsize: '32px', fill: '#FFF'} );
+    }
+    
+    score += 20;
     scoreText.text = 'Score: ' + score;
 }
 
-function attackPlayer(player, enemy){
-    enemy.kill();
-    score -= 10;
-    scoreText.text = 'Score: ' + score; 
- }
+
+function collideEnemy(player, enemy) {    
+    if ( enemy.body.touching.up )    {
+        game.sound.play('boop');
+        enemy.kill();
+        score += 100;
+        scoreText.text = 'Score: ' + score;
+    } else{
+        if(score >= 0){
+            score -= 10;
+            scoreText.text = 'Score: ' + score;
+        }
+        else{
+            resultText = game.add.text(game.camera.width/2, game.camera.height/2, 'You lose, hit refresh to start again.', {fontsize: '32px', fill: '#FFF'} );
+ 
+        }
+
+    }
+}
 
 function render () {
 
