@@ -7,7 +7,7 @@ function preload() {
     game.load.spritesheet('dude', 'assets/dude.png', 32, 48);
     game.load.image('background', 'assets/background2.png');
     game.load.spritesheet('banana', 'assets/banana.png', 33, 56);
-    game.load.spritesheet('lava', 'assets/lava.png', 140, 119);
+    game.load.spritesheet('lava', 'assets/final_lava.png', 112, 96);
     game.load.spritesheet('enemy', 'assets/droid.png', 32,32);
     game.load.audio('boop','assets/boop.wav');
     game.load.audio('song', 'assets/song2.mp3');
@@ -64,18 +64,18 @@ function create() {
 
     game.physics.arcade.gravity.y = 250;
 
-    player = game.add.sprite(32, 32, 'dude');
-    game.physics.enable(player, Phaser.Physics.ARCADE);
-
-    player.body.bounce.y = 0.2;
-    player.body.collideWorldBounds = true;
-    player.body.setSize(20, 32, 5, 16);
-
-    player.animations.add('left', [0, 1, 2, 3], 10, true);
-    player.animations.add('turn', [4], 20, true);
-    player.animations.add('right', [5, 6, 7, 8], 10, true);
+//    player = game.add.sprite(32, 32, 'dude');
+//    game.physics.enable(player, Phaser.Physics.ARCADE);
+//
+//    player.body.bounce.y = 0.2;
+//    player.body.collideWorldBounds = true;
+//    player.body.setSize(20, 32, 5, 16);
+//
+//    player.animations.add('left', [0, 1, 2, 3], 10, true);
+//    player.animations.add('turn', [4], 20, true);
+//    player.animations.add('right', [5, 6, 7, 8], 10, true);
     
-    monkey = game.add.sprite(64, 64, 'player');
+    monkey = game.add.sprite(30, 32, 'player');
     game.physics.enable(monkey, Phaser.Physics.ARCADE);
     
     monkey.body.bounce.y = 0.2;
@@ -83,7 +83,7 @@ function create() {
     monkey.body.setSize(20, 32, 5, 16);
     
     monkey.animations.add('left', [2,3,4,5,6,7,8,9], 3, false);
-//    monkey.animations.add('right', [10, 11, 12, 13, 14, 15, 16, 17], 8, true);
+    monkey.animations.add('right', [10, 11, 12, 13, 14], 4, false);
     
     bananas = game.add.group();
     bananas.enableBody = true;
@@ -118,16 +118,16 @@ function create() {
     
 
 //    lava.body.allowGravity = false;
-    for(var x = 0; x < game.world.width; x+= 128){
+    for(var x = 0; x < game.world.width; x+= 100){
         lava = game.add.sprite(x, 0, 'lava'); //change y position of 
-        lava.animations.add('fall', [0,1,2,3], 4, true);
+        lava.animations.add('fall', [0,1,2,3,4,5,6], 4, true);
         lava.animations.play('fall');
     }
     
 
 
 
-    game.camera.follow(player);
+    game.camera.follow(monkey);
 //    game.camera.setSize(50,50);
 
     cursors = game.input.keyboard.createCursorKeys();
@@ -141,41 +141,39 @@ function create() {
 
 function update() {
     
-    game.physics.arcade.collide(player, layer);
+//    game.physics.arcade.collide(player, layer);
     game.physics.arcade.collide(bananas, layer);
     game.physics.arcade.collide(enemies, layer);
     game.physics.arcade.collide(monkey, layer);
     
-    game.physics.arcade.overlap(player, bananas, collectBanana, null, this);
-    game.physics.arcade.overlap(player, enemies,  collideEnemy, null, this);
+    game.physics.arcade.overlap(monkey, bananas, collectBanana, null, this);
+    game.physics.arcade.overlap(monkey, enemies,  collideEnemy, null, this);
     
     scoreText.x = game.camera.x;
     scoreText.y = game.camera.y;
     
-    player.body.velocity.x = 0;
+    monkey.body.velocity.x = 0;
+    
 
     if (cursors.left.isDown)
     {
-        player.body.velocity.x = -150;
         monkey.body.velocity.x = -150;
 
         if (facing != 'left')
         {
             monkey.animations.play('left');
 
-            player.animations.play('left');
             facing = 'left';
         }
         
     }
     else if (cursors.right.isDown)
     {
-        player.body.velocity.x = 150;
+        monkey.body.velocity.x = 150;
 
         if (facing != 'right')
         {
             monkey.animations.play('right');
-            player.animations.play('right');
             facing = 'right';
         }
     }
@@ -183,24 +181,23 @@ function update() {
     {
         if (facing != 'idle')
         {
-            player.animations.stop();
+            monkey.animations.stop();
 
             if (facing == 'left')
             {
-                player.frame = 1;
+                monkey.frame = 1;
             }
             else
             {
-                player.frame = 0;
+                monkey.frame = 0;
             }
 
             facing = 'idle';
         }
     }
     
-    if (jumpButton.isDown && player.body.onFloor() && game.time.now > jumpTimer)
+    if (jumpButton.isDown && game.time.now > jumpTimer)
     {
-        player.body.velocity.y = -250;
         monkey.body.velocity.y = -250;
         jumpTimer = game.time.now + 750;
     }
