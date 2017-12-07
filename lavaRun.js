@@ -211,7 +211,8 @@ function collectBanana(player, banana){
     console.log('bananaCount: ' + bananaCount);
     
     if(score > 400){
-        resultText = game.add.text(game.camera.width/2, game.camera.height/2, 'Congratulations, You Win!', {fontsize: '32px', fill: '#FFF'} );
+        monkey.kill();
+        resultText = game.add.text(monkey.x, monkey.y, 'Congratulations, You Win! Hit refresh to beat your score.', {fontsize: '32px', fill: '#FFF'} );
     }
     
     score += 20;
@@ -231,7 +232,8 @@ function collideEnemy(player, enemy) {
             scoreText.text = 'Score: ' + score;
         }
         else{
-            resultText = game.add.text(game.camera.width/2, game.camera.height/2, 'You lose, hit refresh to start again.', {fontsize: '32px', fill: '#FFF'} );
+            monkey.kill();
+            resultText = game.add.text(monkey.x, monkey.y, 'You lose, hit refresh to start again.', {fontsize: '32px', fill: '#FFF'} );
  
         }
 
